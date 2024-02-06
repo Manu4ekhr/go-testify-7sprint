@@ -43,10 +43,15 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	// здесь нужно добавить необходимые проверки
-
 	require.NotEmpty(t, responseRecorder.Code)
+
+	status := responseRecorder.Code
+	require.Equal(t, status, http.StatusOK)
+
 	body := responseRecorder.Body.String()
-	//Проверка, что в ответе все 4 кафе
+	assert.NotEqual(t, "wrong city value", body)
+
 	list := strings.Split(body, ",")
 	assert.Equal(t, len(list), totalCount)
+
 }
