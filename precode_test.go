@@ -10,6 +10,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// тест на корректность запроса и непустое тело ответа
+// тут если статус не 200, думаю нет смысла тело смотреть.
+// поэтому статус тестил через require
+func TestMainHandlerWhenOk(t *testing.T) {
+	req := httptest.NewRequest("GET", "/cafe?count=2&city=moscow", nil)
+
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
+
+	// ожидаемый статус (200)
+	status := http.StatusOK
+
+	// фактический статус
+	answerStatus := responseRecorder.Code
+
+	// проверка статуса
+	require.Equal(t, status, answerStatus)
+
+	// проверка, что тело ответа не пустое
+	require.NotEmpty(t, responseRecorder.Body)
+}
+
+// тест на город
+// если статус не 400, но решил, что сообщение можно не смотреть.
+// статус тестил через require
 func TestMainHandlerWhenWrongCity(t *testing.T) {
 	req := httptest.NewRequest("GET", "/cafe?city=klin&count=10", nil)
 
