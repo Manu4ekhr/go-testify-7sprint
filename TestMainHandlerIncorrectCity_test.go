@@ -8,14 +8,16 @@ import (
 )
 
 func TestMainHandlerIncorrectCity(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/cafe?count=4&city=moscow", nil)
+	req := httptest.NewRequest(http.MethodGet, "/cafe?count=4&city=", nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	expected := "moscow"
-	actual := req.URL.Query().Get("city")
+	city := "moscow"
+	actualCity := req.URL.Query().Get("city")
 
-	assert.Equal(t, expected, actual)
+	assert.NotEqual(t, city, actualCity)
+	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+	assert.Equal(t, "wrong city value", responseRecorder.Body.String())
 }

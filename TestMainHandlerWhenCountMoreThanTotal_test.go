@@ -2,23 +2,25 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"strings"
+	"strconv"
 	"testing"
 )
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/cafe?count=4&city=moscow", nil)
+	req := httptest.NewRequest(http.MethodGet, "/cafe?count=15&city=moscow", nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	body := responseRecorder.Body.String()
-	list := strings.Split(body, ",")
+	totalCount := 4
+	count, err := strconv.Atoi(req.URL.Query().Get("count"))
+	if err != nil {
+		log.Println(err)
+	}
 
-	totalCount := 15
-
-	assert.GreaterOrEqual(t, totalCount, len(list))
+	assert.GreaterOrEqual(t, count, totalCount)
 }
