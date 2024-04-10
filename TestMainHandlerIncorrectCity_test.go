@@ -14,10 +14,6 @@ func TestMainHandlerIncorrectCity(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	city := "moscow"
-	actualCity := req.URL.Query().Get("city")
-
-	assert.NotEqual(t, city, actualCity)
 	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
 	assert.Equal(t, "wrong city value", responseRecorder.Body.String())
 }
