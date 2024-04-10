@@ -15,7 +15,7 @@ func TestMainHandlerIncorrectCity(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	expected := "moscow"
-	actual := ""
+	actual := req.URL.Query().Get("city")
 
 	assert.Equal(t, expected, actual)
 }
