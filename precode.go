@@ -57,11 +57,10 @@ func TestMainHandlerWhenCityIsWrong(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	statusCode := responseRecorder.Code
-	city := req.URL.Query().Get("city")
-	_, ok := cafeList[city]
+	body := responseRecorder.Body.String()
 
 	require.Equal(t, statusCode, http.StatusBadRequest)
-	require.Equal(t, ok, "wrong city value")
+	require.Equal(t, body, "wrong city value")
 }
 
 func TestMainHandlerWhenOK(t *testing.T) {
