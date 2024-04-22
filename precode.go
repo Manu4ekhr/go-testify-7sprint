@@ -8,6 +8,7 @@ import (
     "testing"
 )
 
+// создать main.go
 var cafeList = map[string][]string{
     "moscow": []string{"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"},
 }
@@ -46,6 +47,8 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
     w.Write([]byte(answer))
 }
 
+
+// это отправить в main_test.go
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
     totalCount := 4
     req := ... // здесь нужно создать запрос к сервису
