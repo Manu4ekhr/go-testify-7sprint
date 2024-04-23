@@ -1,11 +1,13 @@
 package main
 
 import (
-    "net/http"
-    "net/http/httptest"
-    "strconv"
-    "strings"
-    "testing"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var cafeList = map[string][]string{
@@ -48,11 +50,24 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
     totalCount := 4
-    req := ... // здесь нужно создать запрос к сервису
+    expectedCafes := "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент"
+    req := httptest.NewRequest("GET","/cafe",nil)
 
     responseRecorder := httptest.NewRecorder()
     handler := http.HandlerFunc(mainHandle)
     handler.ServeHTTP(responseRecorder, req)
 
     // здесь нужно добавить необходимые проверки
+    assert.Equal(t, http.StatusOK, responseRecorder.Code)
+
+    assert.Equal(t,expectedCafes, responseRecorder.Body.String())
+
+    cafeList := strings.Split(responseRecorder.Body.String(), ",")
+    assert.Len(t,cafeList,totalCount)
+
+    assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+    assert.Equal(t, "wrong city value", responseRecorder.Body.String())
+
+    assert.Equal(t, "count missing", responseRecorder.Body.String())
+
 }
