@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -12,7 +13,16 @@ import (
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	totalCount := 4
-	req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil)
+
+	baseUrl, err := url.Parse("/cafe")
+	require.NoError(t, err)
+
+	params := url.Values{}
+	params.Add("count", "10")
+	params.Add("city", "moscow")
+
+	baseUrl.RawQuery = params.Encode()
+	req := httptest.NewRequest("GET", baseUrl.String(), nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
@@ -27,7 +37,15 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 }
 
 func TestMainHandlerWhenRequestIsCorrect(t *testing.T) {
-	req := httptest.NewRequest("GET", "/cafe?count=3&city=moscow", nil)
+	baseUrl, err := url.Parse("/cafe")
+	require.NoError(t, err)
+
+	params := url.Values{}
+	params.Add("count", "3")
+	params.Add("city", "moscow")
+
+	baseUrl.RawQuery = params.Encode()
+	req := httptest.NewRequest("GET", baseUrl.String(), nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
@@ -40,9 +58,17 @@ func TestMainHandlerWhenRequestIsCorrect(t *testing.T) {
 }
 
 func TestMainHandlerWhenCityUncorrect(t *testing.T) {
-	err := "wrong city value"
+	errString := "wrong city value"
 
-	req := httptest.NewRequest("GET", "/cafe?count=3&city=ryazan", nil)
+	baseUrl, err := url.Parse("/cafe")
+	require.NoError(t, err)
+
+	params := url.Values{}
+	params.Add("count", "3")
+	params.Add("city", "ryazan123")
+
+	baseUrl.RawQuery = params.Encode()
+	req := httptest.NewRequest("GET", baseUrl.String(), nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
@@ -51,5 +77,5 @@ func TestMainHandlerWhenCityUncorrect(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
 
 	body := responseRecorder.Body.String()
-	assert.Equal(t, err, body)
+	assert.Equal(t, errString, body)
 }
