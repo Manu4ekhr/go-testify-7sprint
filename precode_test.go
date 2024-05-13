@@ -10,42 +10,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Если в параметре `count` указано больше, чем есть всего, должны вернуться все доступные кафе.
+func setupRequestAndRecorder(method, url string) (*http.Request, *httptest.ResponseRecorder) {
+	req := httptest.NewRequest(method, url, nil)
+	recorder := httptest.NewRecorder()
+	return req, recorder
+}
+
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	totalCount := 4
-	req := httptest.NewRequest("GET", "/?count=10&city=moscow", nil)
-	responseRecorder := httptest.NewRecorder()
+	req, recorder := setupRequestAndRecorder("GET", "/?count=10&city=moscow")
 	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
+	handler.ServeHTTP(recorder, req)
 
-	// Запрос сформирован корректно
-	// сервис возвращает код ответа 200
-	if responseRecorder.Code != http.StatusOK {
-		t.Fatalf("Expected status code %d, got %d", http.StatusOK, responseRecorder.Code)
-	}
-
-	body := responseRecorder.Body.String()
-	// Тело ответа не пустое
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	body := recorder.Body.String()
 	require.NotEmpty(t, body)
 	list := strings.Split(body, ",")
 	assert.Equal(t, totalCount, len(list))
 }
 
-// Город, который передаётся в параметре `city`, не поддерживается.
 func TestMainHandlerWhenCityNotCorrect(t *testing.T) {
-	req := httptest.NewRequest("GET", "/?count=4&city=unknown", nil)
-	responseRecorder := httptest.NewRecorder()
+	req, recorder := setupRequestAndRecorder("GET", "/?count=4&city=unknown")
 	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
+	handler.ServeHTTP(recorder, req)
 
-	if responseRecorder.Code != http.StatusBadRequest {
-		t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, responseRecorder.Code)
-	}
-
-	body := responseRecorder.Body.String()
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	body := recorder.Body.String()
 	require.NotEmpty(t, body)
 	list := strings.Split(body, ",")
-	if !assert.Contains(t, body, list[0]) {
-		t.Error("wrong city value")
-	}
+	assert.Contains(t, body, list[0], "wrong city value")
 }
