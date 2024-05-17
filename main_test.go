@@ -10,46 +10,47 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Функция для выполнения запроса и возврата рекордера ответа
-func retRequest(url string) *httptest.ResponseRecorder {
+// Функция для работы с рекордером ответа
+func retRequest(t *testing.T, url string, expectedStatus int) string {
 	req := httptest.NewRequest("GET", url, nil)
 	respRec := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(respRec, req)
-	return respRec
+	require.Equal(t, expectedStatus, respRec.Code)
+	return respRec.Body.String()
 }
-func TestMainHSuccessTests(t *testing.T) {
-	expectedCount := 4
-	expectedBody := "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент"
-
-	respRec := retRequest("/cafe?count=4&city=moscow")
-	require.Equal(t, http.StatusOK, respRec.Code)
-
-	body := respRec.Body.String()
+func TestMainHandlerSuccessTestsEverethingWentGood(t *testing.T) {
+	body := retRequest(t, "/cafe?count=4&city=moscow", http.StatusOK)
 	require.NotEmpty(t, body)
-
 	list := strings.Split(body, ",")
+
+	expectedCount := 4
 	assert.Len(t, list, expectedCount)
+
+	expectedBody := "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент"
 	assert.Equal(t, expectedBody, body)
 }
 func TestMainHandlerMissingCount(t *testing.T) {
-	respRec := retRequest("/cafe?city=moscow")
-	require.Equal(t, http.StatusBadRequest, respRec.Code)
-
-	body := respRec.Body.String()
+	body := retRequest(t, "/cafe?city=moscow", http.StatusBadRequest)
 	assert.Equal(t, "count missing", body)
 }
 func TestMainHandlerWrongCountValue(t *testing.T) {
-	respRec := retRequest("/cafe?count=abc&city=moscow")
-	require.Equal(t, http.StatusBadRequest, respRec.Code)
-
-	body := respRec.Body.String()
+	body := retRequest(t, "/cafe?count=fff&city=moscow", http.StatusBadRequest)
 	assert.Equal(t, "wrong count value", body)
 }
-func TestMainHandlerWrongCityValue(t *testing.T) {
-	respRec := retRequest("/cafe?count=4&city=unknown")
-	require.Equal(t, http.StatusBadRequest, respRec.Code)
+func TestMainHandlerMoreThanAvailableCount(t *testing.T) {
+	body := retRequest(t, "/cafe?count=666&city=moscow", http.StatusOK)
+	require.NotEmpty(t, body)
 
-	body := respRec.Body.String()
+	list := strings.Split(body, ",")
+	expectedCount := 4
+	assert.Len(t, list, expectedCount)
+
+	expectedBody := "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент"
+	assert.Equal(t, expectedBody, body)
+}
+
+func TestMainHandlerWrongCityValue(t *testing.T) {
+	body := retRequest(t, "/cafe?count=4&city=Mordor", http.StatusBadRequest)
 	assert.Equal(t, "wrong city value", body)
 }

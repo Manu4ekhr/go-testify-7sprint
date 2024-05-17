@@ -1,3 +1,4 @@
+// копи-паст из практикума
 package main
 
 import (
