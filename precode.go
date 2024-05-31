@@ -47,12 +47,28 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 }
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-    totalCount := 4
-    req := ... // здесь нужно создать запрос к сервису
+	totalCount := 4
 
-    responseRecorder := httptest.NewRecorder()
-    handler := http.HandlerFunc(mainHandle)
-    handler.ServeHTTP(responseRecorder, req)
+	// Создаем новый HTTP-запрос с count больше, чем общее количество кафе
+	req, err := http.NewRequest("GET", "/?count=10&city=moscow", nil)
+	assert.NoError(t, err)
 
-    // здесь нужно добавить необходимые проверки
+	// Создаем ResponseRecorder для записи ответа сервера
+	responseRecorder := httptest.NewRecorder()
+
+	// Вызываем обработчик хендлера с созданным запросом и записываем ответ в ResponseRecorder
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
+
+	// Проверяем код ответа
+	assert.Equal(t, http.StatusOK, responseRecorder.Code)
+
+	// Проверяем, что тело ответа содержит все доступные кафе
+	expectedAnswer := "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент"
+	assert.Equal(t, expectedAnswer, responseRecorder.Body.String())
+
+	// Проверяем, что count в ответе равен общему количеству кафе
+	actualCount, err := strconv.Atoi(responseRecorder.Header().Get("Count"))
+	assert.NoError(t, err)
+	assert.Equal(t, totalCount, actualCount)
 }
