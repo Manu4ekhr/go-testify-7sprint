@@ -10,11 +10,11 @@ import (
 )
 
 func mainHandle(w http.ResponseWriter, r *http.Request) {
-	// Ваша логика обработки запроса
+	// Логика обработки запроса
 }
 
 func TestMainHandlerWithValidRequest(t *testing.T) {
-	req, err := http.NewRequest("GET", "/cafe?city=moscow&count=2", nil)
+	req, err := http.NewRequest("GET", "/cafe?city=kazan&count=2", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func TestMainHandlerWithInvalidCity(t *testing.T) {
 }
 
 func TestMainHandlerWithCountMoreThanTotal(t *testing.T) {
-	req, err := http.NewRequest("GET", "/cafe?city=moscow&count=5", nil)
+	req, err := http.NewRequest("GET", "/cafe?city=kazan&count=5", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,6 +53,6 @@ func TestMainHandlerWithCountMoreThanTotal(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, responseRecorder.Code, "ожидался статус ОК")
 
-	expectedBody := strings.Join(cafeList["moscow"], ",")
+	expectedBody := strings.Join(cafeList["kazan"], ",")
 	assert.Equal(t, expectedBody, responseRecorder.Body.String(), "ожидались все кафе")
 }
