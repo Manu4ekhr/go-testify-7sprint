@@ -1,74 +1,58 @@
-package main
+package main_test
 
 import (
-    "net/http"
-    "net/http/httptest"
-    "strconv"
-    "strings"
-    "testing"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-var cafeList = map[string][]string{
-    "moscow": []string{"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"},
+func mainHandle(w http.ResponseWriter, r *http.Request) {
+	// Ваша логика обработки запроса
 }
 
-func mainHandle(w http.ResponseWriter, req *http.Request) {
-    countStr := req.URL.Query().Get("count")
-    if countStr == "" {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("count missing"))
-        return
-    }
+func TestMainHandlerWithValidRequest(t *testing.T) {
+	req, err := http.NewRequest("GET", "/cafe?city=moscow&count=2", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-    count, err := strconv.Atoi(countStr)
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("wrong count value"))
-        return
-    }
-
-    city := req.URL.Query().Get("city")
-
-    cafe, ok := cafeList[city]
-    if !ok {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("wrong city value"))
-        return
-    }
-
-    if count > len(cafe) {
-        count = len(cafe)
-    }
-
-    answer := strings.Join(cafe[:count], ",")
-
-    w.WriteHeader(http.StatusOK)
-    w.Write([]byte(answer))
-}
-
-func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-	totalCount := 4
-
-	// Создаем новый HTTP-запрос с count больше, чем общее количество кафе
-	req, err := http.NewRequest("GET", "/?count=10&city=moscow", nil)
-	assert.NoError(t, err)
-
-	// Создаем ResponseRecorder для записи ответа сервера
 	responseRecorder := httptest.NewRecorder()
-
-	// Вызываем обработчик хендлера с созданным запросом и записываем ответ в ResponseRecorder
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	// Проверяем код ответа
-	assert.Equal(t, http.StatusOK, responseRecorder.Code)
+	assert.Equal(t, http.StatusOK, responseRecorder.Code, "ожидался статус ОК")
+	assert.NotEmpty(t, responseRecorder.Body.String(), "ожидалось непустое тело ответа")
+}
 
-	// Проверяем, что тело ответа содержит все доступные кафе
-	expectedAnswer := "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент"
-	assert.Equal(t, expectedAnswer, responseRecorder.Body.String())
+func TestMainHandlerWithInvalidCity(t *testing.T) {
+	req, err := http.NewRequest("GET", "/cafe?city=invalid&count=2", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Проверяем, что count в ответе равен общему количеству кафе
-	actualCount, err := strconv.Atoi(responseRecorder.Header().Get("Count"))
-	assert.NoError(t, err)
-	assert.Equal(t, totalCount, actualCount)
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
+
+	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code, "ожидался статус Bad Request")
+	assert.Equal(t, "неверное значение города", responseRecorder.Body.String(), "ожидалось сообщение об ошибке")
+}
+
+func TestMainHandlerWithCountMoreThanTotal(t *testing.T) {
+	req, err := http.NewRequest("GET", "/cafe?city=moscow&count=5", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
+
+	assert.Equal(t, http.StatusOK, responseRecorder.Code, "ожидался статус ОК")
+
+	expectedBody := strings.Join(cafeList["moscow"], ",")
+	assert.Equal(t, expectedBody, responseRecorder.Body.String(), "ожидались все кафе")
 }
