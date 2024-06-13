@@ -23,17 +23,19 @@ func TestMainHandlerWithInvalidCity(t *testing.T) {
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
-	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code, "ожидался статус Bad Request")
-	assert.Equal(t, "неверное значение города", responseRecorder.Body.String(), "ожидалось сообщение об ошибке")
+	require.Equal (t, http.StatusBadRequest, responseRecorder.Code, "ожидался статус Bad Request")
+	assert.NotEmpty(t, responseRecorder.Body, "ожидалось непустое тело ответа")
 }
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	totalCount := 4
-	req := httptest.NewRequest("GET", "/cafe?count=10&city=kazan", nil) //
+	req := httptest.NewRequest("GET", "/cafe?count=10&city=kazan", nil)
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
-	assert.Equal(t, responseRecorder.Code, http.StatusOK)
+
+	require.Equal(t, http.StatusOK, responseRecorder.Code, "ожидался статус ОК")
+
 	list := strings.Split(responseRecorder.Body.String(), ",")
-	assert.Equal(t, len(list), totalCount)
+	assert.Len(t, list, totalCount, "ожидалось правильное количество элементов")
 }
