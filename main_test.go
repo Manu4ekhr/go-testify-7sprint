@@ -51,7 +51,7 @@ func TestMainHandlerWhenResponseBodyNotEmpty(t *testing.T) { //запрос сф
 }
 
 func TestMainHandlerWhenResponseCityNotSupported(t *testing.T) { // Город, который передаётся в параметре city,
-	// не поддерживается. Сервис возвращает код ответа 400 и ошибку wrong city value в теле ответа.
+	// не поддерживается. Сервис возвращает код ответа 400 и ошибку wrong city value в теле ответа
 
 	req := httptest.NewRequest("GET", "/cafe?count=2&city=rostov", nil)
 
