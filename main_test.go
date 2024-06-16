@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,15 +23,16 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) { //Если в пар�
 	handler.ServeHTTP(responseRecorder, req)
 
 	// здесь нужно добавить необходимые проверки
+
+	require.Equal(t, http.StatusOK, responseRecorder.Code)
+
 	// проверка количества полученных в ответе кафе с их действительным количеством, при условии что count
 	// больше этого количества
 	body := responseRecorder.Body.String()
 
 	cafeList := strings.Split(body, ",")
 
-	cafeNumbers := len(cafeList)
-
-	assert.Equal(t, totalCount, cafeNumbers)
+	assert.Len(t, cafeList, totalCount)
 
 }
 
@@ -43,10 +45,10 @@ func TestMainHandlerWhenResponseBodyNotEmpty(t *testing.T) { //запрос сф
 	handler.ServeHTTP(responseRecorder, req)
 
 	//проверка кода ответа
-	assert.Equal(t, http.StatusOK, responseRecorder.Code)
+	require.Equal(t, http.StatusOK, responseRecorder.Code)
 
 	//проверка не пустое ли тело ответа
-	require.NotEmpty(t, responseRecorder.Body)
+	assert.NotEmpty(t, responseRecorder.Body)
 
 }
 
@@ -59,10 +61,11 @@ func TestMainHandlerWhenResponseCityNotSupported(t *testing.T) { // Город, 
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
+	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+
 	city := req.URL.Query().Get("city")
 
 	assert.NotContains(t, cafeList, city)
 	assert.Equal(t, "wrong city value", responseRecorder.Body.String())
-	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
 
 }
