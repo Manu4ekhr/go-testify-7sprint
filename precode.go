@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var cafeList = map[string][]string{
@@ -57,7 +58,7 @@ func TestMainHandlerSuccessfulRequest(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	// Проверяем статус ответа
-	assert.Equal(t, http.StatusOK, responseRecorder.Code)
+	require.Equal(t, http.StatusOK, responseRecorder.Code)
 
 	// Проверяем, что тело ответа не пустое
 	body := responseRecorder.Body.String()
@@ -73,7 +74,7 @@ func TestMainHandlerWrongCityValue(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	// Проверяем статус ответа
-	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
 
 	// Проверяем, что тело ответа содержит ожидаемую ошибку
 	assert.Equal(t, "wrong city value", responseRecorder.Body.String())
@@ -88,7 +89,7 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	// Проверяем статус ответа
-	assert.Equal(t, http.StatusOK, responseRecorder.Code)
+	require.Equal(t, http.StatusOK, responseRecorder.Code)
 
 	// Проверяем, что тело ответа не пустое
 	body := responseRecorder.Body.String()
