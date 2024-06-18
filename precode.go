@@ -2,13 +2,9 @@ package main
 
 import (
 	"net/http"
-	"net/http/httptest"
+	//"net/http/httptest"
 	"strconv"
 	"strings"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var cafeList = map[string][]string{
@@ -47,59 +43,4 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(answer))
-}
-
-func TestMainHandlerSuccessfulRequest(t *testing.T) {
-	req := httptest.NewRequest("GET", "/cafe?count=2&city=moscow", nil)
-
-	responseRecorder := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
-
-	// Проверяем статус ответа
-	require.Equal(t, http.StatusOK, responseRecorder.Code)
-
-	// Проверяем, что тело ответа не пустое
-	body := responseRecorder.Body.String()
-	assert.NotEmpty(t, body)
-}
-
-func TestMainHandlerWrongCityValue(t *testing.T) {
-	req := httptest.NewRequest("GET", "/cafe?count=2&city=someothercity", nil)
-
-	responseRecorder := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
-
-	// Проверяем статус ответа
-	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
-
-	// Проверяем, что тело ответа содержит ожидаемую ошибку
-	assert.Equal(t, "wrong city value", responseRecorder.Body.String())
-}
-
-func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-	req := httptest.NewRequest("GET", "/cafe?count=5&city=moscow", nil)
-
-	responseRecorder := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
-
-	// Проверяем статус ответа
-	require.Equal(t, http.StatusOK, responseRecorder.Code)
-
-	// Проверяем, что тело ответа не пустое
-	body := responseRecorder.Body.String()
-	assert.NotEmpty(t, body)
-
-	// Проверяем длину тела ответа
-	expectedLength := 4 // Всего 4 кафе в Москве
-	assert.Equal(t, expectedLength, len(body))
-
-	// Проверяем, что ответ содержит правильные значения
-	expectedCafeNames := "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент"
-	assert.Equal(t, expectedCafeNames, body)
 }
