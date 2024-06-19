@@ -1,58 +1,41 @@
 package main
 
 import (
-    "net/http"
-    "net/http/httptest"
-    "strconv"
-    "strings"
-    "testing"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-var cafeList = map[string][]string{
-    "moscow": []string{"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"},
+func TestMainHandlerWithValidRequest(t *testing.T) {
+	req, err := http.NewRequest("GET", "/cafe?city=kazan&count=2", nil)
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
+	assert.Equal(t, http.StatusOK, responseRecorder.Code, "ожидался статус ОК")
+	assert.NotEmpty(t, responseRecorder.Body.String(), "ожидалось непустое тело ответа")
 }
 
-func mainHandle(w http.ResponseWriter, req *http.Request) {
-    countStr := req.URL.Query().Get("count")
-    if countStr == "" {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("count missing"))
-        return
-    }
-
-    count, err := strconv.Atoi(countStr)
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("wrong count value"))
-        return
-    }
-
-    city := req.URL.Query().Get("city")
-
-    cafe, ok := cafeList[city]
-    if !ok {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("wrong city value"))
-        return
-    }
-
-    if count > len(cafe) {
-        count = len(cafe)
-    }
-
-    answer := strings.Join(cafe[:count], ",")
-
-    w.WriteHeader(http.StatusOK)
-    w.Write([]byte(answer))
+func TestMainHandlerWithInvalidCity(t *testing.T) {
+	req, err := http.NewRequest("GET", "/cafe?city=invalid&count=2", nil)
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
+	require.Equal (t, http.StatusBadRequest, responseRecorder.Code, "ожидался статус Bad Request")
+	assert.NotEmpty(t, responseRecorder.Body, "ожидалось непустое тело ответа")
 }
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-    totalCount := 4
-    req := ... // здесь нужно создать запрос к сервису
+	totalCount := 4
+	req := httptest.NewRequest("GET", "/cafe?count=10&city=kazan", nil)
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
 
-    responseRecorder := httptest.NewRecorder()
-    handler := http.HandlerFunc(mainHandle)
-    handler.ServeHTTP(responseRecorder, req)
+	require.Equal(t, http.StatusOK, responseRecorder.Code, "ожидался статус ОК")
 
-    // здесь нужно добавить необходимые проверки
+	list := strings.Split(responseRecorder.Body.String(), ",")
+	assert.Len(t, list, totalCount, "ожидалось правильное количество элементов")
 }
