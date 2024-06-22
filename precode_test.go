@@ -14,8 +14,8 @@ func TestMainHandlerWithValidRequest(t *testing.T) {
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
-	assert.Equal(t, http.StatusOK, responseRecorder.Code, "ожидался статус ОК")
-	assert.NotEmpty(t, responseRecorder.Body.String(), "ожидалось непустое тело ответа")
+	require.Equal(t, http.StatusOK, responseRecorder.Code, "ожидался статус ОК")
+	assert.NotEmpty(t, responseRecorder.Body)
 }
 
 func TestMainHandlerWithInvalidCity(t *testing.T) {
@@ -24,7 +24,7 @@ func TestMainHandlerWithInvalidCity(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 	require.Equal (t, http.StatusBadRequest, responseRecorder.Code, "ожидался статус Bad Request")
-	assert.NotEmpty(t, responseRecorder.Body, "ожидалось непустое тело ответа")
+	assert.Equal(t, responseRecorder.Body.String(), "wrong city value")
 }
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
