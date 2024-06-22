@@ -45,14 +45,10 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
     w.WriteHeader(http.StatusOK)
     w.Write([]byte(answer))
 }
-
-func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-    totalCount := 4
-    req := ... // здесь нужно создать запрос к сервису
-
-    responseRecorder := httptest.NewRecorder()
-    handler := http.HandlerFunc(mainHandle)
-    handler.ServeHTTP(responseRecorder, req)
-
-    // здесь нужно добавить необходимые проверки
+func main() {
+	http.HandleFunc(`/cafe`, mainHandle)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		panic(err)
+	}
 }
