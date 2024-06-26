@@ -10,18 +10,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-	totalCount := 4
-	// здесь нужно создать запрос к сервису
-	reqStatusOK := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil)
-
+func TestMainHandlerWhenNonStatusOk(t *testing.T) {
+	req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil)
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
 
-	// здесь нужно добавить необходимые проверки
-	handler.ServeHTTP(responseRecorder, reqStatusOK)
-	require.Equal(t, responseRecorder.Code, http.StatusOK)
-	assert.Equal(t, len(strings.Split(responseRecorder.Body.String(), ",")), totalCount)
+	require.Equal(t, http.StatusOK, responseRecorder.Code)
+}
+
+func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
+	totalCount := 4
+
+	req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil)
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
+
+	assert.NotEmpty(t, responseRecorder.Body.String())
+	assert.Equal(t, totalCount, len(strings.Split(responseRecorder.Body.String(), ",")))
 }
 
 func TestMainHandlerWhenCityBad(t *testing.T) {
@@ -29,6 +36,7 @@ func TestMainHandlerWhenCityBad(t *testing.T) {
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
-	assert.Equal(t, responseRecorder.Code, http.StatusBadRequest)
-	assert.Equal(t, responseRecorder.Body.String(), "wrong city value")
+
+	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+	assert.Equal(t, "wrong city value", responseRecorder.Body.String())
 }
