@@ -2,12 +2,8 @@ package main
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"strconv"
 	"strings"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var cafeList = map[string][]string{
@@ -46,40 +42,4 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(answer))
-}
-
-func TestMainHandlerCorrectRequest(t *testing.T) {
-	req, err := http.NewRequest(http.MethodGet, "/cafe?city=moscow&count=2", nil)
-	assert.NoError(t, err)
-
-	responseRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
-
-	assert.Equal(t, http.StatusOK, responseRecorder.Code)
-	assert.NotEmpty(t, responseRecorder.Body.String())
-}
-
-func TestMainHandlerUnsupportedCity(t *testing.T) {
-	req, err := http.NewRequest(http.MethodGet, "/cafe?city=unknown&count=2", nil)
-	assert.NoError(t, err)
-
-	responseRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
-
-	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
-	assert.Equal(t, "wrong city value\n", responseRecorder.Body.String())
-}
-
-func TestMainHandlerCountMoreThanAvailable(t *testing.T) {
-	req, err := http.NewRequest(http.MethodGet, "/cafe?city=moscow&count=10", nil)
-	assert.NoError(t, err)
-
-	responseRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(mainHandle)
-	handler.ServeHTTP(responseRecorder, req)
-
-	assert.Equal(t, http.StatusOK, responseRecorder.Code)
-	assert.Equal(t, "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент", responseRecorder.Body.String())
 }
