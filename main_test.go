@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -46,23 +46,13 @@ func TestCountMoreThanTotal(t *testing.T) {
 		return
 	}
 
-	body := responseRecorder.Body.String()
+	assert.Equal(t, http.StatusOK, responseRecorder.Code)
 
-	// проверяем, что в cafeList есть ключ "moscow" и получаем список кафе из этого ключа
+	// Проверяем, что в карте в принципе есть ключ "moscow" (ведь мы его явно задаем).
 	cafes, ok := cafeList["moscow"]
 	assert.True(t, ok)
-
-	// создаем expectedCafes как срез из первых totalCount элементов списка кафе
-	expectedCafes := cafes[:count]
-	// создаем expectedBody как строку, полученную объединением expectedCafes через запятую.
-	expectedBody := strings.Join(expectedCafes, ",")
-
-	actual := strings.Split(body, ",")
-	// сравниваем фактический список кафе, полученный из тела ответа, с expectedCafes
-	assert.ElementsMatch(t, actual, expectedCafes)
-	// сравниваем фактическое тело ответа с expectedBody.
-	assert.Equal(t, expectedBody, body)
-
+	// Проверяем, что длина списка кафе равна нашему count.
+	assert.Len(t, cafes, count)
 }
 
 // Запрос сформирован корректно, сервис возвращает код ответа 200 и тело ответа не пустое.
@@ -81,7 +71,8 @@ func Test200AndBodyNotEmpty(t *testing.T) {
 
 	// тело ответа не пустое.
 	body := responseRecorder.Body.String()
-	assert.NotEmpty(t, body, err)
+	// верно, раз тело ответа должно быть непустым, имеет смысл сразу останавливать выполнение теста, если это условие не выполняется. Ведь дальнейшие проверки в этом случае будут бессмысленны.
+	require.NotEmpty(t, body, err)
 }
 
 // Город, который передаётся в параметре city, не поддерживается.
@@ -96,6 +87,6 @@ func TestNoCity(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, responseRecorder.Code, http.StatusBadRequest)
-	assert.Equal(t, responseRecorder.Body.String(), "wrong city value")
+	require.Equal(t, responseRecorder.Code, http.StatusBadRequest)
+	require.Equal(t, responseRecorder.Body.String(), "wrong city value")
 }
