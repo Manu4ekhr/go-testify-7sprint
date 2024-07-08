@@ -11,15 +11,15 @@ import (
 )
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-	req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil) // здесь нужно создать запрос к сервису
+	req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	// здесь нужно добавить необходимые проверки
-	require.Equal(t, http.StatusOK, responseRecorder.Code, "Expected status code 200")
 	exceptedBody := strings.Join(cafeList["moscow"], ",")
+
+	require.Equal(t, http.StatusOK, responseRecorder.Code, "Expected status code 200")
 	assert.Equal(t, exceptedBody, responseRecorder.Body.String(), "Expected all cafes in response body")
 	assert.Len(t, strings.Split(responseRecorder.Body.String(), ","), len(cafeList["moscow"]), "Expected length of cafes to match total available")
 }
@@ -31,7 +31,10 @@ func TestMainHandlerCorrectRequest(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
+	exceptedBody := strings.Join(cafeList["moscow"], ",")
+
 	require.Equal(t, http.StatusOK, responseRecorder.Code, "Expected status code 200")
+	assert.Equal(t, exceptedBody, responseRecorder.Body.String(), "Expected all cafes in response body")
 	assert.NotEmpty(t, responseRecorder.Body.String(), "Response body should not be empty")
 }
 
@@ -43,5 +46,5 @@ func TestMainHandlerWrongCity(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	require.Equal(t, http.StatusBadRequest, responseRecorder.Code, "Expected status code 400")
-	assert.Equal(t, "wrong city value", responseRecorder.Body.String(), "Expected 'wrong city value' in response body")
+	assert.Equal(t, "wrong city valuee", responseRecorder.Body.String())
 }
