@@ -1,33 +1,31 @@
 package main
 
-import(
+import (
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
-	"strings"
 	"net/http/httptest"
+	"strings"
 	"testing"
-    "github.com/stretchr/testify/assert"
-    "github.com/stretchr/testify/require"
 )
 
-
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-		totalCount := 4
-		req := httptest.NewRequest("GET", "/cafe?count=3&city=moscow", nil)
-	
-		responseRecorder := httptest.NewRecorder()
-		handler := http.HandlerFunc(mainHandle)
-		handler.ServeHTTP(responseRecorder, req)
-	
-	    require.Equal(t, http.StatusOK, responseRecorder.Code)
-	    require.NotEmpty(t, responseRecorder.Body)
+	totalCount := 4
+	req := httptest.NewRequest("GET", "/cafe?count=3&city=moscow", nil)
 
-	    body := responseRecorder.Body.String()
-		arr := strings.Split(body, ",")
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+	handler.ServeHTTP(responseRecorder, req)
 
-		assert.Equal(t, totalCount, len(arr))
+	require.Equal(t, http.StatusOK, responseRecorder.Code)
+
+	body := responseRecorder.Body.String()
+	arr := strings.Split(body, ",")
+
+	assert.Len(t, arr, totalCount)
 }
 
-func TestMainHadlerWhenOk(t *testing.T){
+func TestMainHadlerWhenOk(t *testing.T) {
 	req := httptest.NewRequest("GET", "/cafe?count=3&city=moscow", nil)
 
 	responseRecorder := httptest.NewRecorder()
@@ -39,8 +37,7 @@ func TestMainHadlerWhenOk(t *testing.T){
 
 }
 
-
-func TestMainHandlerNotOk(t *testing.T){
+func TestMainHandlerNotOk(t *testing.T) {
 	req := httptest.NewRequest("GET", "/cafe?count=3&city=moscow", nil)
 
 	responseRecorder := httptest.NewRecorder()
