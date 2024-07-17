@@ -23,7 +23,7 @@ func TestHandlerValidRequest(t *testing.T){
 }
 
 func TestHandlerInvalidCity(t *testing.T){
-     req, err := http.NewRequest("GET", "/cafe?city=invalid&count=2", nil)
+     req, err := http.NewRequest("GET", "/cafe?city=london&count=4", nil)
      require.NoError(t, err)
 
      responseRecorder := httptest.NewRecorder()
