@@ -6,6 +6,9 @@ import (
     "strconv"
     "strings"
     "testing"
+
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
 )
 
 var cafeList = map[string][]string{
@@ -48,11 +51,41 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
     totalCount := 4
-    req := ... // здесь нужно создать запрос к сервису
+    req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil)
 
     responseRecorder := httptest.NewRecorder()
     handler := http.HandlerFunc(mainHandle)
     handler.ServeHTTP(responseRecorder, req)
 
-    // здесь нужно добавить необходимые проверки
+    body := responseRecorder.Body.String()
+    list := strings.Split(body, ",")
+
+    assert.Len(t, list, totalCount)
+}
+
+func TestMainHandlerWhenOk(t *testing.T) {
+    req := httptest.NewRequest("GET", "/cafe?count=3&city=moscow", nil)
+
+    responseRecorder := httptest.NewRecorder()
+    handler := http.HandlerFunc(mainHandle)
+    handler.ServeHTTP(responseRecorder, req)
+
+    status := responseRecorder.Code
+
+    require.Equal(t, status, http.StatusOK)
+    require.NotEmpty(t, responseRecorder.Body.String())
+}
+
+func TestMainHandlerWhenMissingCount(t *testing.T) {
+    req := httptest.NewRequest("GET", "/cafe?city=moscow", nil)
+
+    responseRecorder := httptest.NewRecorder()
+    handler := http.HandlerFunc(mainHandle)
+    handler.ServeHTTP(responseRecorder, req)
+
+    status := responseRecorder.Code
+    expected := "wrong city value"
+
+    require.Equal(t, status, http.StatusBadRequest)
+    require.Equal(t, expected, responseRecorder.Body.String())
 }
