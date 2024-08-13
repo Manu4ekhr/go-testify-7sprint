@@ -38,7 +38,7 @@ func TestMainHandlerWhenOk(t *testing.T) {
 }
 
 func TestMainHandlerWhenMissingCount(t *testing.T) {
-    req := httptest.NewRequest("GET", "/cafe?city=moscow", nil)
+    req := httptest.NewRequest("GET", "/cafe?count=2&city=Kirov", nil)
 
     responseRecorder := httptest.NewRecorder()
     handler := http.HandlerFunc(mainHandle)
@@ -47,6 +47,6 @@ func TestMainHandlerWhenMissingCount(t *testing.T) {
     status := responseRecorder.Code
     expected := "wrong city value"
 
-    require.Equal(t, status, http.StatusBadRequest)
-    require.Equal(t, expected, responseRecorder.Body.String())
+    assert.Equal(t, status, http.StatusBadRequest)
+    assert.Equal(t, expected, responseRecorder.Body.String())
 }
