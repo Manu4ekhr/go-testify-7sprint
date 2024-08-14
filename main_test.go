@@ -25,7 +25,6 @@ func TestMainHandlerWhenCorrectRequest(t *testing.T) {
 }
 
 func TestMainHandlerWhenCityUnsupported(t *testing.T) {
-	errMsg := "wrong city value"
 	req := httptest.NewRequest("GET", "/cafe?count=2&city=tomsk", nil)
 
 	responseRecorder := httptest.NewRecorder()
@@ -35,7 +34,7 @@ func TestMainHandlerWhenCityUnsupported(t *testing.T) {
 	body := responseRecorder.Body.String()
 
 	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
-	assert.Equal(t, errMsg, body)
+	assert.Equal(t, "wrong city value", body)
 
 }
 
