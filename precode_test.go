@@ -11,7 +11,7 @@ import (
 )
 
 func TestMainHandlerWhenOk(t *testing.T) {
-	req := httptest.NewRequest("GET", "/cafe?count=3&city=moscow", nil)
+	req := httptest.NewRequest("GET", "/cafe?count=4&city=moscow", nil)
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
