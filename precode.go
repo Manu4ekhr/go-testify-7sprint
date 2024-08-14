@@ -1,58 +1,132 @@
 package main
 
 import (
-    "net/http"
-    "net/http/httptest"
-    "strconv"
-    "strings"
-    "testing"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
-var cafeList = map[string][]string{
-    "moscow": []string{"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"},
+// Task ...
+type Task struct {
+	ID           string   `json:"id"`
+	Description  string   `json:"description"`
+	Note         string   `json:"note"`
+	Applications []string `json:"applications"`
 }
 
-func mainHandle(w http.ResponseWriter, req *http.Request) {
-    countStr := req.URL.Query().Get("count")
-    if countStr == "" {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("count missing"))
-        return
-    }
-
-    count, err := strconv.Atoi(countStr)
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("wrong count value"))
-        return
-    }
-
-    city := req.URL.Query().Get("city")
-
-    cafe, ok := cafeList[city]
-    if !ok {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("wrong city value"))
-        return
-    }
-
-    if count > len(cafe) {
-        count = len(cafe)
-    }
-
-    answer := strings.Join(cafe[:count], ",")
-
-    w.WriteHeader(http.StatusOK)
-    w.Write([]byte(answer))
+var tasks = map[string]Task{
+	"1": {
+		ID:          "1",
+		Description: "Сделать финальное задание темы REST API",
+		Note:        "Если сегодня сделаю, то завтра будет свободный день. Ура!",
+		Applications: []string{
+			"VS Code",
+			"Terminal",
+			"git",
+		},
+	},
+	"2": {
+		ID:          "2",
+		Description: "Протестировать финальное задание с помощью Postmen",
+		Note:        "Лучше это делать в процессе разработки, каждый раз, когда запускаешь сервер и проверяешь хендлер",
+		Applications: []string{
+			"VS Code",
+			"Terminal",
+			"git",
+			"Postman",
+		},
+	},
 }
 
-func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
-    totalCount := 4
-    req := ... // здесь нужно создать запрос к сервису
+// Ниже напишите обработчики для каждого эндпоинта
+func mainHandle(res http.ResponseWriter, r *http.Request) {
+	fmt.Println("Получен запрос")
+}
 
-    responseRecorder := httptest.NewRecorder()
-    handler := http.HandlerFunc(mainHandle)
-    handler.ServeHTTP(responseRecorder, req)
+func getTasks(w http.ResponseWriter, r *http.Request) {
+	// сериализуем данные из слайса artists
+	resp, err := json.Marshal(tasks)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    // здесь нужно добавить необходимые проверки
+	// в заголовок записываем тип контента, у нас это данные в формате JSON
+	w.Header().Set("Content-Type", "application/json")
+	// так как все успешно, то статус OK
+	w.WriteHeader(http.StatusOK)
+	// записываем сериализованные в JSON данные в тело ответа
+	w.Write(resp)
+}
+
+func getTasksID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	task, ok := tasks[id]
+	if !ok {
+		http.Error(w, "Задача не найден", http.StatusNoContent)
+		return
+	}
+
+	resp, err := json.Marshal(task)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(resp)
+}
+
+func postTasks(w http.ResponseWriter, r *http.Request) {
+	var task Task
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = json.Unmarshal(buf.Bytes(), &tasks); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	tasks[task.ID] = task
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+}
+
+func delTasks(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	id := chi.URLParam(r, "id")
+	_, ok := tasks[id]
+	if !ok {
+		http.Error(w, "Задача  не найдена", http.StatusBadRequest)
+		return
+	}
+	delete(tasks, id)
+	w.WriteHeader(http.StatusCreated)
+}
+
+func main() {
+	r := chi.NewRouter()
+	// здесь регистрируйте ваши обработчики
+	r.Get("/", mainHandle)
+	r.Get("/tasks", getTasks)
+	r.Post("/tasks", postTasks)
+	r.Get("/tasks/{id}", getTasksID)
+	r.Delete("/tasks/{id}", delTasks)
+
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		fmt.Printf("Ошибка при запуске сервера: %s", err.Error())
+		return
+	}
 }
