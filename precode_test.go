@@ -18,6 +18,8 @@ func TestMainHandlerWhenOk(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	require.Equal(t, http.StatusOK, responseRecorder.Code)
+	body := responseRecorder.Body.String()
+	assert.NotEmpty(t, body)
 }
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	totalCount := 4
@@ -31,13 +33,14 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	list := strings.Split(body, ",")
 	assert.Len(t, list, totalCount)
 }
-func TestMainHandlerWhenNotEmpty(t *testing.T) {
-	req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil)
+func TestMainHandlerWhenCityNotOk(t *testing.T) {
+	city := "moscow"
+	req := httptest.NewRequest("GET", "/cafe?count=10&city=tula", nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	body := responseRecorder.Body.String()
-	assert.NotEmpty(t, body)
+	actualCity := req.URL.Query().Get("city")
+	assert.Equal(t, city, actualCity)
 }
