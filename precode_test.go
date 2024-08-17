@@ -34,13 +34,13 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	assert.Len(t, list, totalCount)
 }
 func TestMainHandlerWhenCityNotOk(t *testing.T) {
-	city := "moscow"
 	req := httptest.NewRequest("GET", "/cafe?count=10&city=tula", nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	actualCity := req.URL.Query().Get("city")
-	assert.Equal(t, city, actualCity)
+	expected := `wrong city value`
+	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+	assert.Equal(t, expected, responseRecorder.Body.String())
 }
