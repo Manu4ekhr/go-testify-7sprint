@@ -19,7 +19,7 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 	}
 
 	count, err := strconv.Atoi(countStr)
-	if err != nil {
+	if err != nil || count < 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte("wrong count value"))
 		return
