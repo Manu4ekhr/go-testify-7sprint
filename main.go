@@ -46,7 +46,7 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", mainHandle)
+	mux.HandleFunc("/cafe", mainHandle)
 
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
