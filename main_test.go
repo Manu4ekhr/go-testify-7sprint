@@ -16,17 +16,10 @@ func TestMainHandlerWhenOk(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	expected := http.StatusOK                                                   // Ожидаемое сообщение о статусе.
-	warningMissingCount := `count missing`                                      // Сообщение об отсутствии количества.
-	warningWrongCountValue := `wrong count value`                               // Сообщение о неверном количестве.
-	warningCityNotSpecified := `city not specified`                             // Сообщение о том, что город не указан.
-	warningWrongCityValue := `wrong city value`                                 // Сообщение о неверном городе.
-	assert.Equal(t, expected, responseRecorder.Code)                            // Проверяем, что статус 200 корректный.
-	assert.NotEmpty(t, responseRecorder.Body.String())                          // Проверяем, что тело ответа не пустое.
-	assert.NotEqual(t, warningMissingCount, responseRecorder.Body.String())     // Проверка правильности запроса по ответу.
-	assert.NotEqual(t, warningWrongCountValue, responseRecorder.Body.String())  // Проверка правильности запроса по ответу.
-	assert.NotEqual(t, warningCityNotSpecified, responseRecorder.Body.String()) // Проверка правильности запроса по ответу.
-	assert.NotEqual(t, warningWrongCityValue, responseRecorder.Body.String())   // Проверка правильности запроса по ответу.
+	expected := http.StatusOK                                      // Ожидаемое сообщение о статусе.
+	expectedReply := `Мир кофе, Сладкоежка`                        // Ожидаемое тело ответа.
+	assert.Equal(t, expected, responseRecorder.Code)               // Проверяем, что статус 200 корректный.
+	assert.Equal(t, expectedReply, responseRecorder.Body.String()) // Сравниваем сообщение с ожидаемым.
 }
 
 func TestMainHandlerWhenWrongCityValue(t *testing.T) {
@@ -43,7 +36,7 @@ func TestMainHandlerWhenWrongCityValue(t *testing.T) {
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	totalCount := 4
-	totalList := []string{"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"}
+	expectedList := `Мир кофе, Сладкоежка, Кофе и завтраки, Сытый студент` // Ожидаемый ответ.
 	req := httptest.NewRequest("GET", "/cafe?count=20&city=moscow", nil)
 
 	responseRecorder := httptest.NewRecorder()
@@ -53,9 +46,7 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	list := strings.Split(body, ", ")
 
 	expected := http.StatusOK                                     // Ожидаемое сообщение о статусе.
-	expectedList := strings.Join(totalList[:totalCount], ", ")    // Ожидаемый ответ.
 	assert.Equal(t, expected, responseRecorder.Code)              // Проверяем, что статус 200 корректный.
-	assert.NotEmpty(t, responseRecorder.Body.String())            // Проверяем, что тело ответа не пустое.
 	assert.Equal(t, expectedList, responseRecorder.Body.String()) // Проверка правильности ответа.
 	assert.Equal(t, totalCount, len(list))                        // Проверка правильной обработки больших count.
 
