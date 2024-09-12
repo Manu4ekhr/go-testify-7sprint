@@ -6,9 +6,6 @@ import (
 	"strings"
 )
 
-// Прошу пояснить. У меня линтер в VScode говорит, что:
-// redundant type from array, slice, or map composite literal
-// Предлагает удалить []string перед списком названий кафе. Как быть?
 var cafeList = map[string][]string{
 	"moscow": []string{"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"},
 }
