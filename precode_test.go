@@ -31,7 +31,7 @@ func TestMainHandlerWhenCityIsNotSupported(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	//Проверяем что город, который передаётся в параметре city, не поддерживается. Сервис возвращает код ответа 400 и ошибку wrong city value в теле ответа..
-	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
 	assert.Equal(t, responseRecorder.Body.String(), "wrong city value")
 
 }
