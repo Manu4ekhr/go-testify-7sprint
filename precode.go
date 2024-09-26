@@ -89,7 +89,7 @@ func TestMainHandleWhenCityIsNotSupported(t *testing.T) {
 	req := httptest.NewRequest("GET", "/cafe", nil)
 	q := req.URL.Query()
 	q.Add("city", "wrong_city") // Неподдерживаемый город
-	q.Add("count", "1")         // Пример значения count
+	q.Add("count", "1")         // Пример  значения count
 
 	req.URL.RawQuery = q.Encode()
 
