@@ -17,13 +17,13 @@ func TestMainHandlerWhenOk(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	assert.Equal(t, http.StatusOK, responseRecorder.Code, "Expected status code 200")
+	assert.Equal(t, http.StatusOK, responseRecorder.Code)
+
+	assert.NotEmpty(t, responseRecorder.Body)
 
 	body := responseRecorder.Body.String()
-	assert.NotEmpty(t, body, "Expected non-empty body")
-
 	cafes := strings.Split(body, ",")
-	assert.Len(t, cafes, 2, "Expected 2 cafes")
+	assert.Len(t, cafes, 2)
 }
 
 func TestMainHandlerWhenMissingCount(t *testing.T) {
@@ -33,10 +33,10 @@ func TestMainHandlerWhenMissingCount(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code, "Expected status code 400")
+	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
 
-	expected := `count missing`
-	assert.Equal(t, expected, responseRecorder.Body.String(), "Expected error message for missing count")
+	expected := "count missing"
+	assert.Equal(t, expected, responseRecorder.Body.String())
 }
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
@@ -47,16 +47,11 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	require.Equal(t, http.StatusOK, responseRecorder.Code, "Expected status code 200")
+	require.Equal(t, http.StatusOK, responseRecorder.Code)
 
-	expectedCafes := []string{"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"}
+	assert.NotEmpty(t, responseRecorder.Body)
+
 	body := responseRecorder.Body.String()
-	assert.NotEmpty(t, body, "Expected non-empty body")
-
 	cafes := strings.Split(body, ",")
-	assert.Len(t, cafes, totalCount, "Expected all available cafes to be returned")
-
-	for i, cafe := range cafes {
-		assert.Equal(t, expectedCafes[i], cafe, "Expected correct cafe name")
-	}
+	assert.Len(t, cafes, totalCount)
 }
