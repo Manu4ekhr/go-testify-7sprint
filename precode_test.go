@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +13,8 @@ import (
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	city := "moscow"
-	moreThenTotal := len(cafeList[city]) + 1
+	totalCount := len(cafeList[city])
+	moreThenTotal := totalCount + 1
 	url := fmt.Sprintf("/cafe?count=%d&city=%s", moreThenTotal, city)
 	req := httptest.NewRequest("GET", url, nil)
 
@@ -21,9 +23,11 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	statusCode := responseRecorder.Code
+	countedRes := len(strings.Split(responseRecorder.Body.String(), ","))
 
 	require.Equal(t, statusCode, http.StatusOK)
 	assert.NotEmpty(t, responseRecorder.Body)
+	assert.Equal(t, countedRes, totalCount)
 }
 
 func TestMainHandlerWhenWrongCity(t *testing.T) {
@@ -54,7 +58,9 @@ func TestMainHandlerWhenRightTotal(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	statusCode := responseRecorder.Code
+	countedRes := len(strings.Split(responseRecorder.Body.String(), ","))
 
 	require.Equal(t, statusCode, http.StatusOK)
 	assert.NotEmpty(t, responseRecorder.Body)
+	assert.Equal(t, countedRes, totalCount)
 }
