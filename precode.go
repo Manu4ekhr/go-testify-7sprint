@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -66,4 +67,30 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	expectedCount := totalCount
 	actualCount := len(strings.Split(body, ","))
 	require.Equal(t, expectedCount, actualCount)
+}
+
+func TestMainHandlerCorrectRequest(t *testing.T) {
+	req, err := http.NewRequest("GET", "/?city=moscow&count=3", nil)
+	assert.NoError(t, err)
+
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+
+	handler.ServeHTTP(responseRecorder, req)
+
+	assert.Equal(t, http.StatusOK, responseRecorder.Code)
+	assert.NotEmpty(t, responseRecorder.Body.String())
+}
+
+func TestMainHandlerWrongCity(t *testing.T) {
+	req, err := http.NewRequest("GET", "/?city=not_a_city&count=3", nil)
+	require.NoError(t, err)
+
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(mainHandle)
+
+	handler.ServeHTTP(responseRecorder, req)
+
+	require.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+	require.Equal(t, "wrong city value", responseRecorder.Body.String())
 }
