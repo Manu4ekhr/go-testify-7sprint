@@ -52,9 +52,9 @@ func TestMainHandlerValidRequest(t *testing.T) {
 	// 1
 	//фейк запрос
 	req := httptest.NewRequest("GET", "/cafe?count=2&city=moscow", nil)
-	// пишем ответ сюда
+	//пишем ответ сюда
 	responseRecorder := httptest.NewRecorder()
-	// переводим хэндлер в объект
+	//переводим хэндлер в объект
 	handler := http.HandlerFunc(mainHandle)
 	//симулируем обработчик
 	handler.ServeHTTP(responseRecorder, req)
