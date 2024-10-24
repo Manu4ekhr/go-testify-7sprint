@@ -66,9 +66,8 @@ reqStrct :=
 	assert.Equal(t, responseRecorder.Code, 200)
 	//проверяю тело запроса на заполненность
 	assert.NotEmpty(t, responseRecorder.Body)
-
+    //получаю параметр count
 	count := req.URL.Query().Get("count")
-
 	//сравниваю totalCount и count
 	assert.Equal(t, totalCount, count)
 
