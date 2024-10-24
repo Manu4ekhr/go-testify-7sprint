@@ -51,8 +51,6 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	totalCount := 4
-reqStrct := 
-
 	req := httptest.NewRequest("GET", "/cafe?count=10&city=moscow", nil) // здесь нужно создать запрос к сервису
 
 	responseRecorder := httptest.NewRecorder()
@@ -66,7 +64,7 @@ reqStrct :=
 	assert.Equal(t, responseRecorder.Code, 200)
 	//проверяю тело запроса на заполненность
 	assert.NotEmpty(t, responseRecorder.Body)
-    //получаю параметр count 
+	//получаю параметр count
 	count := req.URL.Query().Get("count")
 	//сравниваю totalCount и count
 	assert.Equal(t, totalCount, count)
