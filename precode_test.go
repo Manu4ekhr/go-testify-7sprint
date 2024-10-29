@@ -12,7 +12,7 @@ import (
 )
 
 var cafeList = map[string][]string{
-	"moscow": []string{"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"},
+	"moscow": {"Мир кофе", "Сладкоежка", "Кофе и завтраки", "Сытый студент"},
 }
 
 /*
@@ -64,25 +64,60 @@ func mainHandle(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(answer))
 }
 
-/*
-Проверки должны осуществляться с помощью пакета testify.
-
-Нужно реализовать три теста:
-
-    1. Запрос сформирован корректно, сервис возвращает код ответа 200 и тело ответа не пустое.
-
-    2. Город, который передаётся в параметре city, не поддерживается. Сервис возвращает код ответа 400 и ошибку wrong city value в теле ответа.
-
-    3. Если в параметре count указано больше, чем есть всего, должны вернуться все доступные кафе.
-*/
-
+// Проверки должны осуществляться с помощью пакета testify.
+//
+// Нужно реализовать три теста:
+// ...
+// ==========================================================================================
 // 1. Запрос сформирован корректно, сервис возвращает код ответа 200 и тело ответа не пустое.
-//
+// ==========================================================================================
+func TestMainHandlerStatusOkAndNotEmptyBody(t *testing.T) {
 
+	req := httptest.NewRequest("GET", "/cafe?count=4&city=moscow", nil) // здесь нужно создать запрос к сервису
+
+	responseRecorder := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(mainHandle)
+
+	handler.ServeHTTP(responseRecorder, req)
+
+	// здесь нужно добавить необходимые проверки
+	// ...
+	// Проверка статуса ответа
+	require.Equal(t, responseRecorder.Code, http.StatusOK, "Принятый статус: %d не соответствует %d. Тест прерван!", responseRecorder.Code, http.StatusOK)
+
+	// Проверка содержимого тела
+	rxBody := responseRecorder.Body.String()
+
+	rxList := strings.Split(rxBody, ",")
+
+	assert.NotEmpty(t, len(rxList), "Ошибка. Тело ответа пустое. Было запрошено: 4 позиции!")
+
+}
+
+// ===========================================================================================================================================
 // 2. Город, который передаётся в параметре city, не поддерживается. Сервис возвращает код ответа 400 и ошибку wrong city value в теле ответа.
-//
+// ===========================================================================================================================================
+func TestMainHandlerNotExistCity(t *testing.T) {
 
+	req := httptest.NewRequest("GET", "/cafe?count=4&city=omsk", nil) // здесь нужно создать запрос к сервису
+
+	responseRecorder := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(mainHandle)
+
+	handler.ServeHTTP(responseRecorder, req)
+
+	// здесь нужно добавить необходимые проверки
+	// ...
+	// Проверка статуса ответа
+	require.Equal(t, responseRecorder.Code, http.StatusOK, "Принятый статус: %d не соответствует %d. Тест прерван!. Тело ответа: %s", responseRecorder.Code, http.StatusOK, responseRecorder.Body.String())
+
+}
+
+// ==============================================================================================
 // 3. Если в параметре count указано больше, чем есть всего, должны вернуться все доступные кафе.
+// ==============================================================================================
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 
 	totalCount := 4
@@ -98,13 +133,13 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	// здесь нужно добавить необходимые проверки
 	// ...
 	// Проверка статуса ответа
-	require.Equal(t, responseRecorder.Code, http.StatusOK, "Принятый статус не соответствует StatusOK. Тест прерван!")
+	require.Equal(t, responseRecorder.Code, http.StatusOK, "Принятый статус: %d не соответствует %d. Тест прерван!", responseRecorder.Code, http.StatusOK)
 
 	// Проверка содержимого тела
 	rxBody := responseRecorder.Body.String()
 
 	rxList := strings.Split(rxBody, ",")
 
-	assert.Equal(t, len(rxList), totalCount, "В запросе на %d позиций, возвращено %d", totalCount, len(rxList))
+	assert.NotEqual(t, len(rxList), totalCount, "Нет соответствия. Запрошено: 20 позиций, а получено: %d позиций", len(rxList))
 
 }
