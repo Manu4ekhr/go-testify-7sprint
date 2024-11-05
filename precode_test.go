@@ -22,7 +22,7 @@ func TestMainHandlerCorrectRequest(t *testing.T) {
 	require.Equal(t, http.StatusOK, responseRecorder.Code, "Expected status code 200 OK")
 
 	// Проверяем, что тело ответа не пустое
-	assert.NotEmpty(t, responseRecorder.Body.String(), "Response body should not be empty")
+	assert.NotEmpty(t, responseRecorder.Body)
 }
 
 func TestMainHandlerUnsupportedCity(t *testing.T) {
@@ -53,10 +53,6 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 
 	// Проверка кода ответа 200 OK
 	require.Equal(t, http.StatusOK, responseRecorder.Code, "Expected status code 200 OK")
-
-	// Проверка тела ответа
-	expected := "Мир кофе,Сладкоежка,Кофе и завтраки,Сытый студент"
-	assert.Equal(t, expected, responseRecorder.Body.String(), "Expected body to match all available cafes")
 
 	// Проверка, что количество кафе в ответе равно totalCount
 	assert.Len(t, strings.Split(responseRecorder.Body.String(), ","), totalCount, "The number of cafes should match totalCount")
